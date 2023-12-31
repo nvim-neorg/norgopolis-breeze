@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 neorg-breeze = { git = "https://github.com/nvim-neorg/neorg-breeze", version = "1.0.0" }
 neorg-dirman = "0.1.1"
-norgopolis-module = { version = "0.1.0", path = "../norgopolis/norgopolis-module" }
+norgopolis-module = "2.0.1"
 serde = { version = "1.0.164", features = ["derive"] }
 tokio = "1.28.2"
 tokio-stream = "0.1.14"

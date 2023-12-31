@@ -25,7 +25,7 @@ checksum = "b9ccdd8f2a161be9bd5c023df56f1b2a0bd1d83872ae53b71a84a12c9bf6e842"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.43",
 ]
 
 [[package]]
@@ -292,7 +292,7 @@ checksum = "89ca545a94061b6365f2c7355b4b32bd20df3ff95f02da9329b34ccc3bd6ee72"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.43",
 ]
 
 [[package]]
@@ -566,18 +566,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a"
 
 [[package]]
-name = "neorg-breeze"
-version = "1.0.0"
-source = "git+https://github.com/nvim-neorg/neorg-breeze#01bb7b082831b925b7499ad1165f99d4126c55b1"
-dependencies = [
- "anyhow",
- "neorg-dirman",
- "rusty_pool",
- "tree-sitter",
- "tree-sitter-norg",
-]
-
-[[package]]
 name = "neorg-dirman"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -591,7 +579,6 @@ dependencies = [
 name = "norgopolis-breeze"
 version = "0.1.0"
 dependencies = [
- "neorg-breeze",
  "neorg-dirman",
  "norgopolis-module",
  "serde",
@@ -599,19 +586,35 @@ dependencies = [
  "tokio-stream",
  "tree-sitter",
  "tree-sitter-norg",
+ "ts-breeze",
 ]
 
 [[package]]
 name = "norgopolis-module"
-version = "0.1.0"
+version = "2.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "214df798c180eb3fd27869b079cb57afe325c68a37a0014344ba5b1258bc49c3"
 dependencies = [
  "anyhow",
  "futures",
+ "norgopolis-protos",
  "prost",
  "rmp-serde",
  "serde",
  "tokio",
  "tokio-stream",
+ "tonic",
+]
+
+[[package]]
+name = "norgopolis-protos"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47ab2e73ed112afad24baf1fb9ca01de8f933098c8c53650dc6556ccfc419a6b"
+dependencies = [
+ "prost",
+ "rmp-serde",
+ "serde",
  "tonic",
  "tonic-build",
 ]
@@ -686,7 +689,7 @@ checksum = "39407670928234ebc5e6e580247dd567ad73a3578460c5990f9503df207e8f07"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.43",
 ]
 
 [[package]]
@@ -719,9 +722,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.60"
+version = "1.0.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dec2b086b7a862cf4de201096214fa870344cf922b2b30c167badb3af3195406"
+checksum = "a293318316cf6478ec1ad2a21c49390a8d5b5eae9fab736467d93fbc0edc29c5"
 dependencies = [
  "unicode-ident",
 ]
@@ -917,22 +920,22 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.164"
+version = "1.0.193"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9e8c8cf938e98f769bc164923b06dce91cea1751522f46f8466461af04c9027d"
+checksum = "25dd9975e68d0cb5aa1120c288333fc98731bd1dd12f561e468ea4728c042b89"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.164"
+version = "1.0.193"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9735b638ccc51c28bf6914d90a2e9725b377144fc612c49a611fddd1b631d68"
+checksum = "43576ca501357b9b071ac53cdc7da8ef0cbd9493d8df094cd821777ea6e894d3"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.43",
 ]
 
 [[package]]
@@ -993,9 +996,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "2.0.18"
+version = "2.0.43"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32d41677bcbe24c20c52e7c70b0d8db04134c5d1066bf98662e2871ad200ea3e"
+checksum = "ee659fb5f3d355364e1f3e5bc10fb82068efbf824a1e9d1c9504244a6469ad53"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1073,7 +1076,7 @@ checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.43",
 ]
 
 [[package]]
@@ -1203,7 +1206,7 @@ checksum = "5f4f31f56159e98206da9efd823404b79b6ef3143b4a7ab76e67b1751b25a4ab"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.18",
+ "syn 2.0.43",
 ]
 
 [[package]]
@@ -1238,6 +1241,16 @@ name = "try-lock"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
+
+[[package]]
+name = "ts-breeze"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "neorg-dirman",
+ "rusty_pool",
+ "tree-sitter",
+]
 
 [[package]]
 name = "unicode-ident"

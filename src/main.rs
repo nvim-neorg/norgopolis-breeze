@@ -1,9 +1,9 @@
 use norgopolis_module::{
     invoker_service::Service, module_communication::MessagePack, Code, Module, Status,
 };
-use tokio_stream::wrappers::ReceiverStream;
+use std::{collections::HashMap, path::PathBuf};
+use tokio_stream::wrappers::UnboundedReceiverStream;
 use tree_sitter::{Language, Query, QueryCursor};
-use std::collections::HashMap;
 
 #[derive(serde::Deserialize)]
 struct ParseQueryArguments {
@@ -12,7 +12,9 @@ struct ParseQueryArguments {
     num_jobs: Option<usize>,
 }
 
+#[derive(serde::Serialize)]
 struct ParseQueryResult {
+    file: String,
     captures: HashMap<String, Vec<String>>,
 }
 
@@ -28,7 +30,7 @@ impl Breeze {
 
 #[norgopolis_module::async_trait]
 impl Service for Breeze {
-    type Stream = ReceiverStream<Result<MessagePack, Status>>;
+    type Stream = UnboundedReceiverStream<Result<MessagePack, Status>>;
 
     async fn call(
         &self,
@@ -47,27 +49,56 @@ impl Service for Breeze {
                     path: directory_args.path.into(),
                 };
 
-                let files = ws.files();
-                let (tx, rx) = tokio::sync::mpsc::channel(files.len());
+                // Bounded channel involves async which in closures does not work very well.
+                let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
 
-                neorg_breeze::breeze::parse_files(
-                    files,
+                let cloned_language = self.language;
+
+                ts_breeze::breeze::parse_files(
+                    ws.files(),
                     self.language,
                     directory_args.num_jobs,
-                    |ast| {
-                        let query = match Query::new(self.language, &directory_args.query) {
+                    move |ast: tree_sitter::Tree, (file, src): (PathBuf, String)| {
+                        let query = match Query::new(cloned_language, &directory_args.query) {
                             Ok(value) => value,
-                            Err(err) => return todo!(),
+                            Err(err) => {
+                                tx.send(Err(Status::new(Code::InvalidArgument, err.message)))
+                                    .unwrap();
+                                return;
+                            }
                         };
 
+                        let mut cursor = QueryCursor::new();
+                        let mut hashmap = HashMap::<String, Vec<String>>::new();
 
-                        let cursor = QueryCursor::new();
+                        for (query_capture, ix) in
+                            cursor.captures(&query, ast.root_node(), src.as_bytes())
+                        {
+                            query_capture.captures.iter().fold(
+                                &mut hashmap,
+                                |hashmap, &capture| {
+                                    let range = capture.node.range();
+                                    let content = src[range.start_byte..range.end_byte].to_string();
 
-                        tx.send(Ok(MessagePack::encode()));
+                                    hashmap
+                                        .entry(query.capture_names()[ix].clone())
+                                        .and_modify(|vec| vec.push(content))
+                                        .or_default();
+                                    hashmap
+                                },
+                            );
+                        }
+
+                        tx.send(Ok(MessagePack::encode(ParseQueryResult {
+                            file: file.to_string_lossy().into(),
+                            captures: hashmap,
+                        })
+                        .unwrap()))
+                            .unwrap();
                     },
                 );
 
-                Ok(ReceiverStream::new(rx))
+                Ok(UnboundedReceiverStream::new(rx))
             }
             _ => Err(Status::new(Code::NotFound, "Requested function not found!")),
         }
@@ -76,7 +107,7 @@ impl Service for Breeze {
 
 #[tokio::main]
 async fn main() {
-    Module::start(Breeze::new(tree_sitter_norg::language()))
+    Module::new().start(Breeze::new(tree_sitter_norg::language()))
         .await
         .unwrap()
 }
